@@ -171,7 +171,7 @@ extension SMPager {
         }
         _pageChangeAnimationFinished = false
         UIView.animate(withDuration: animated ? 0.3 : 0.0, animations: {
-            self.scrollRectToVisible(CGRect.init(x: 0, y: 0, width: self.bounds.width, height: self.bounds.height), animated: false)
+            self.scrollRectToVisible(CGRect.init(x: self.bounds.width * CGFloat(self._frameIndex-1), y: 0, width: self.bounds.width, height: self.bounds.height), animated: false)
         }, completion: { _ in
             self._pageChangeAnimationFinished = true
         })
@@ -186,7 +186,7 @@ extension SMPager {
         }
         _pageChangeAnimationFinished = false
         UIView.animate(withDuration: animated ? _animationDuration : 0.0, animations: {
-            self.scrollRectToVisible(CGRect.init(x: self.bounds.width*2, y: 0, width: self.bounds.width, height: self.bounds.height), animated: false)
+            self.scrollRectToVisible(CGRect.init(x: self.bounds.width * CGFloat(self._frameIndex+1), y: 0, width: self.bounds.width, height: self.bounds.height), animated: false)
         }, completion: { _ in
             self._pageChangeAnimationFinished = true
         })
