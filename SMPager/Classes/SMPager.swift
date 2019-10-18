@@ -38,7 +38,7 @@ public protocol SMPagerDelegate: class {
 /// Delegation protocol that informs the component about the view count and the actual views to be displayed for each index
 public protocol SMPagerDataSource: class {
     func numberOfViews() -> Int
-    func viewForIndex(_ index: Int, reuseView: UIView?) -> UIView
+    func viewForIndex(_ index: Int, reusedView: UIView?) -> UIView
 }
 
 /// Type representation of scroll direction
@@ -201,7 +201,7 @@ extension SMPager {
     }
     
     ///
-    /// Reloads the SMPager by removing all the subviews
+    /// Reloads the SMPager by removing all the subviews 
     ///
     public func reloadData() {
         superview?.layoutIfNeeded()

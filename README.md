@@ -1,3 +1,4 @@
+
 # SMPager
 **SMPager** or SimplePager is a lightweight, memory-efficient implementation of UIScrollView written in Swift, that works with reusable views the same way as UIKit's  UITableView does.
 
@@ -10,6 +11,14 @@
  - Uses the least amount of memory required to render the views.
  - Supports infinite scrolling.
  - Populates your UIViews using delegation.
+
+ ## Installation
+ SMPager is available through [CocoaPods](https://cocoapods.org). To install it, simply add the following line to your Podfile:
+
+
+ ```ruby
+ pod 'SMPager'
+ ```
 
 ## Example
 In your ViewController initialize and add the pager to the superview.
@@ -85,13 +94,42 @@ extension ViewController: SMPagerDataSource {
     }
 }
 ```
+## Documentation
+### Properties
+```swift
+// Enables/disables the infinite scrolling mode. You can set this variable anytime without the need to call reloadData(). Default value is false.
+var infiniteScrollingEnabled: Bool 
+// Set the SMPagerDelegate (see bellow)
+var pagerDelegate: SMPagerDelegate?
+// Set the SMPagerDataSource (see bellow)
+var pagerDataSource: SMPagerDataSource?
+```
+### Methods
+```swift
+// Moves to previous or next page. You can pass a boolean value if you want the transition between pages to be animated (default value is true).
+func moveToPreviousPage(animated: Bool = true)
+func moveToNextPage(animated: Bool = true)
 
-## Installation
-SMPager is available through [CocoaPods](https://cocoapods.org). To install it, simply add the following line to your Podfile:
+// Moves to a specific page without animation
+func move(to page: Int)
 
+// Reloads all the pager views
+func reloadData()
+```
 
-```ruby
-pod 'SMPager'
+### SMPagerDelegate methods
+
+```swift
+// Called when a page is changed
+func pageChanged(page: Int)
+```
+### SMPagerDataSource methods
+
+```swift
+// Return the number of views to be rendered
+func numberOfViews() -> Int
+// Return the view to be rendered. If a reusedView is available it is passed to the method.
+func viewForIndex(_ index: Int, reusedView: UIView?) -> UIView
 ```
 
 ## Author

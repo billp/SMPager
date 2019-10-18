@@ -85,10 +85,10 @@ extension ViewController: SMPagerDataSource {
         return imageURLs.count
     }
     
-    func viewForIndex(_ index: Int, reuseView: UIView?) -> UIView {
+    func viewForIndex(_ index: Int, reusedView: UIView?) -> UIView {
         let imageView: UIImageView
-        if let reuseView = reuseView as? UIImageView {
-            imageView = reuseView
+        if let reusedView = reusedView as? UIImageView {
+            imageView = reusedView
         } else {
             imageView = UIImageView()
             imageView.contentMode = .scaleAspectFill
