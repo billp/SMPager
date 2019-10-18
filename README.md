@@ -99,9 +99,9 @@ extension ViewController: SMPagerDataSource {
 ```swift
 // Enables/disables the infinite scrolling mode. You can set this variable anytime without the need to call reloadData(). Default value is false.
 var infiniteScrollingEnabled: Bool 
-// Set the SMPagerDelegate (see bellow)
+// Set the SMPagerDelegate. (see bellow)
 var pagerDelegate: SMPagerDelegate?
-// Set the SMPagerDataSource (see bellow)
+// Set the SMPagerDataSource. (see bellow)
 var pagerDataSource: SMPagerDataSource?
 ```
 ### Methods
@@ -110,25 +110,25 @@ var pagerDataSource: SMPagerDataSource?
 func moveToPreviousPage(animated: Bool = true)
 func moveToNextPage(animated: Bool = true)
 
-// Moves to a specific page without animation
+// Moves to a specific page without animation.
 func move(to page: Int)
 
-// Reloads all the pager views
+// Reloads all the pager views.
 func reloadData()
 ```
 
 ### SMPagerDelegate methods
 
 ```swift
-// Called when a page is changed
+// Called when a page is changed.
 func pageChanged(page: Int)
 ```
 ### SMPagerDataSource methods
 
 ```swift
-// Return the number of views to be rendered
+// Return the number of views to be rendered.
 func numberOfViews() -> Int
-// Return the view to be rendered. If a reusedView is available it is passed to the method.
+// Return the view to be rendered for a specific index. reusedView is passed if it's available.
 func viewForIndex(_ index: Int, reusedView: UIView?) -> UIView
 ```
 
