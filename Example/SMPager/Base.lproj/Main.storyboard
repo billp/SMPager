@@ -1,11 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="13771" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="vXZ-lx-hvc">
-    <device id="retina4_7" orientation="portrait">
-        <adaptation id="fullscreen"/>
-    </device>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="15400" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="vXZ-lx-hvc">
+    <device id="retina6_1" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="13772"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="15404"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
@@ -14,17 +12,57 @@
             <objects>
                 <viewController id="vXZ-lx-hvc" customClass="ViewController" customModule="SMPager_Example" customModuleProvider="target" sceneMemberID="viewController">
                     <layoutGuides>
-                        <viewControllerLayoutGuide type="top" id="jyV-Pf-zRb"/>
-                        <viewControllerLayoutGuide type="bottom" id="2fi-mo-0CV"/>
+                        <viewControllerLayoutGuide type="top" id="akv-Qr-N9k"/>
+                        <viewControllerLayoutGuide type="bottom" id="FN2-LT-61Z"/>
                     </layoutGuides>
                     <view key="view" contentMode="scaleToFill" id="kh9-bI-dsS">
-                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                        <subviews>
+                            <pageControl opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" numberOfPages="3" translatesAutoresizingMaskIntoConstraints="NO" id="smZ-7M-3cy">
+                                <rect key="frame" x="187.5" y="834" width="39" height="20"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="39" id="XQv-y1-J1Y"/>
+                                    <constraint firstAttribute="height" constant="20" id="vac-Vf-hUC"/>
+                                </constraints>
+                                <color key="pageIndicatorTintColor" systemColor="systemGrayColor" red="0.5568627451" green="0.5568627451" blue="0.57647058819999997" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            </pageControl>
+                            <navigationBar contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="gyg-3F-lqa">
+                                <rect key="frame" x="0.0" y="44" width="414" height="44"/>
+                                <color key="barTintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <items>
+                                    <navigationItem title="SMPager" id="L3T-je-v1l">
+                                        <barButtonItem key="leftBarButtonItem" title="Previous" id="Y05-of-M4w">
+                                            <connections>
+                                                <action selector="previousAction:" destination="vXZ-lx-hvc" id="46q-U4-e2r"/>
+                                            </connections>
+                                        </barButtonItem>
+                                        <barButtonItem key="rightBarButtonItem" title="Next" id="4d5-pr-7RA">
+                                            <connections>
+                                                <action selector="nextAction:" destination="vXZ-lx-hvc" id="vCK-HI-1bI"/>
+                                            </connections>
+                                        </barButtonItem>
+                                    </navigationItem>
+                                </items>
+                            </navigationBar>
+                        </subviews>
                         <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                        <constraints>
+                            <constraint firstItem="gyg-3F-lqa" firstAttribute="leading" secondItem="kh9-bI-dsS" secondAttribute="leading" id="Kre-Ia-dpw"/>
+                            <constraint firstItem="FN2-LT-61Z" firstAttribute="top" secondItem="smZ-7M-3cy" secondAttribute="bottom" constant="8" id="RDN-jJ-6ek"/>
+                            <constraint firstItem="gyg-3F-lqa" firstAttribute="top" secondItem="akv-Qr-N9k" secondAttribute="bottom" id="Vhu-GK-eoY"/>
+                            <constraint firstAttribute="trailing" secondItem="gyg-3F-lqa" secondAttribute="trailing" id="ewf-ay-uo0"/>
+                            <constraint firstItem="smZ-7M-3cy" firstAttribute="centerX" secondItem="kh9-bI-dsS" secondAttribute="centerX" id="iMs-M5-TlV"/>
+                        </constraints>
                     </view>
+                    <connections>
+                        <outlet property="navBar" destination="gyg-3F-lqa" id="e7P-HU-B0y"/>
+                        <outlet property="pageControl" destination="smZ-7M-3cy" id="dBS-Ih-glH"/>
+                    </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="x5A-6p-PRh" sceneMemberID="firstResponder"/>
             </objects>
+            <point key="canvasLocation" x="133.59999999999999" y="128.18590704647679"/>
         </scene>
     </scenes>
 </document>

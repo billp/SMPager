@@ -1,0 +1,22 @@
+{
+  "name": "SMPager",
+  "version": "0.1.0",
+  "summary": "A short description of SMPager.",
+  "description": "TODO: Add long description of the pod here.",
+  "homepage": "https://github.com/Vasilis Panagiotopoulos/SMPager",
+  "license": {
+    "type": "MIT",
+    "file": "LICENSE"
+  },
+  "authors": {
+    "Vasilis Panagiotopoulos": "v.panagiotopoulos@afse.eu"
+  },
+  "source": {
+    "git": "https://github.com/Vasilis Panagiotopoulos/SMPager.git",
+    "tag": "0.1.0"
+  },
+  "platforms": {
+    "ios": "8.0"
+  },
+  "source_files": "SMPager/Classes/**/*"
+}

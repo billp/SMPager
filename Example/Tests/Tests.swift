@@ -1,5 +1,4 @@
 import XCTest
-import SMPager
 
 class Tests: XCTestCase {
     

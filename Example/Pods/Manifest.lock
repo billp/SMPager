@@ -1,0 +1,25 @@
+PODS:
+  - Kingfisher (5.8.3):
+    - Kingfisher/Core (= 5.8.3)
+  - Kingfisher/Core (5.8.3)
+  - SMPager (0.1.0)
+
+DEPENDENCIES:
+  - Kingfisher
+  - SMPager (from `../`)
+
+SPEC REPOS:
+  trunk:
+    - Kingfisher
+
+EXTERNAL SOURCES:
+  SMPager:
+    :path: "../"
+
+SPEC CHECKSUMS:
+  Kingfisher: b7e4cb65ff24c264bd2a1284b75b974d907afd94
+  SMPager: dde205656f1ff859c4f2130df001364bbb279894
+
+PODFILE CHECKSUM: 2b62cbcf6bb174c46f300c461ce3cb5f877a4424
+
+COCOAPODS: 1.8.4

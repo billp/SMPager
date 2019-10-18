@@ -1,0 +1,6 @@
+framework module SMPager {
+  umbrella header "SMPager-umbrella.h"
+
+  export *
+  module * { export * }
+}

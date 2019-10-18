@@ -2,10 +2,5 @@ use_frameworks!
 
 target 'SMPager_Example' do
   pod 'SMPager', :path => '../'
-
-  target 'SMPager_Tests' do
-    inherit! :search_paths
-
-    
-  end
+  pod 'Kingfisher'
 end
