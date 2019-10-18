@@ -53,7 +53,7 @@ open class SMPager: UIScrollView {
     // MARK: Public Properties
     weak public var pagerDelegate: SMPagerDelegate?
     weak public var pagerDataSource: SMPagerDataSource?
-    public var infiniteScrollingEnabled: Bool = true {
+    public var infiniteScrollingEnabled: Bool = false {
         didSet {
             reloadData()
         }
@@ -200,9 +200,9 @@ extension SMPager {
         reloadData()
     }
     
-    /**
-     * Reloads the SMPager
-     */
+    ///
+    /// Reloads the SMPager by removing all the subviews
+    ///
     public func reloadData() {
         superview?.layoutIfNeeded()
         subviews.forEach({ $0.removeFromSuperview() })

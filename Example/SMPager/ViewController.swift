@@ -28,7 +28,7 @@ class ViewController: UIViewController {
         pager.pagerDelegate = self
         return pager
     }()
-    
+
     func setupConstraints() {
         pager.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
@@ -39,6 +39,7 @@ class ViewController: UIViewController {
         ])
     }
 
+    // MARK: View lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
@@ -58,6 +59,7 @@ class ViewController: UIViewController {
 
 }
 
+// MARK: Actions
 extension ViewController {
     @IBAction func previousAction(_ sender: Any) {
         pager.moveToPreviousPage()
@@ -70,12 +72,14 @@ extension ViewController {
     }
 }
 
+// MARK: SMPagerDelegate
 extension ViewController: SMPagerDelegate {
     func pageChanged(page: Int) {
         pageControl.currentPage = page
     }
 }
 
+// MARK: SMPagerDataSource
 extension ViewController: SMPagerDataSource {
     func numberOfViews() -> Int {
         return imageURLs.count
