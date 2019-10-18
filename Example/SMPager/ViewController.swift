@@ -13,25 +13,19 @@ import Kingfisher
 class ViewController: UIViewController {
     @IBOutlet weak var navBar: UINavigationBar!
     @IBOutlet weak var pageControl: UIPageControl!
-
+    @IBOutlet weak var infiniteBarButtonItem: UIBarButtonItem!
+    
     let imageURLs = [
       "https://picsum.photos/id/177/500/900",
       "https://picsum.photos/id/886/500/900",
       "https://picsum.photos/id/362/500/900",
       "https://picsum.photos/id/569/500/900",
-      "https://picsum.photos/id/758/500/900",
-      "https://picsum.photos/id/704/500/900",
-      "https://picsum.photos/id/294/500/900",
-      "https://picsum.photos/id/507/500/900",
-      "https://picsum.photos/id/596/500/900",
-      "https://picsum.photos/id/930/500/900",
     ]
     
     lazy var pager: SMPager = {
         let pager = SMPager()
         pager.pagerDataSource = self
         pager.pagerDelegate = self
-        pager.infiniteScrollingEnabled = false
         return pager
     }()
     
@@ -54,12 +48,14 @@ class ViewController: UIViewController {
         view.bringSubviewToFront(pageControl)
         
         pageControl.numberOfPages = imageURLs.count
+        infiniteBarButtonItem.customView?.isUserInteractionEnabled = false
     }
 
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
     }
+
 }
 
 extension ViewController {
@@ -68,6 +64,9 @@ extension ViewController {
     }
     @IBAction func nextAction(_ sender: Any) {
         pager.moveToNextPage()
+    }
+    @IBAction func infiniteSwitchValueChanged(_ sender: UISwitch) {
+        pager.infiniteScrollingEnabled = sender.isOn
     }
 }
 

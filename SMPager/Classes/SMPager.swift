@@ -53,7 +53,11 @@ open class SMPager: UIScrollView {
     // MARK: Public Properties
     weak public var pagerDelegate: SMPagerDelegate?
     weak public var pagerDataSource: SMPagerDataSource?
-    public var infiniteScrollingEnabled: Bool = true
+    public var infiniteScrollingEnabled: Bool = true {
+        didSet {
+            reloadData()
+        }
+    }
 
     // MARK: Private Properties
     fileprivate var _initialized = false
@@ -86,6 +90,13 @@ open class SMPager: UIScrollView {
     // Returns the current position of the frames (it can be 0, 1 or 2)
     fileprivate var _frameIndex: Int {
         return Int(contentOffset.x / bounds.width)
+    }
+    
+    fileprivate var _maxFrameNumber: Int {
+        guard let numberOfViews = self.pagerDataSource?.numberOfViews() else {
+            return -1
+        }
+        return numberOfViews-1 > 1 ? 2 : numberOfViews-1
     }
     
     // Calculates the next page pased on the current x position.
@@ -138,17 +149,11 @@ open class SMPager: UIScrollView {
             _initialized = true
             return
         }
-                
-        // Throw fatal error if numberOfViews method is not defined
-        guard let numberOfViews = pagerDataSource?.numberOfViews() else {
-            fatalError("numberOfViews() not implemented")
-        }
-        
         updateScrollDirection()
         
         // Ιf the number of views are 2 then handle them differently
-        if numberOfViews == 2 {
-            handleTwoPageDidScroll()
+        if infiniteScrollingEnabled {
+            handleInfiniteDidScroll()
         } else {
             handleDidScroll()
         }
@@ -202,38 +207,23 @@ extension SMPager {
         superview?.layoutIfNeeded()
         subviews.forEach({ $0.removeFromSuperview() })
         
-        guard let numberOfViews = pagerDataSource?.numberOfViews(), let viewForIndex = pagerDataSource?.viewForIndex, numberOfViews > 0 else {
-            return
-        }
+        let viewsToBeRendered: [UIView]
         
-        var viewsToBeRendered = [UIView]()
-        
-        if numberOfViews > 1 {
-            let leftIndex = _currentIndex == 0 ? numberOfViews-1 : _currentIndex-1
-            let rightIndex = _currentIndex == numberOfViews-1 ? 0 : _currentIndex+1
-            
-            viewsToBeRendered = [
-                viewForIndex(leftIndex, nil),
-                viewForIndex(_currentIndex, nil),
-                viewForIndex(rightIndex, nil)
-            ]
-            
-            if numberOfViews == 2 {
-                viewsToBeRendered.removeFirst()
-            }
-            
-            contentSize = CGSize(width: bounds.width * 3, height: bounds.height)
-            moveToFrame(1)
+        if infiniteScrollingEnabled {
+            bounces = false
+            viewsToBeRendered = viewsForInfinitePager()
         } else {
-            viewsToBeRendered = [
-                viewForIndex(_currentIndex, nil),
-            ]
-            contentOffset.x = 0
-            contentSize = CGSize(width: bounds.width, height: bounds.height)
+            viewsToBeRendered = viewsForPager()
         }
-        
+            
         for (index, view) in viewsToBeRendered.enumerated() {
             setView(view, toFrameAtIndex: index)
+        }
+        
+        if infiniteScrollingEnabled {
+            handleInfiniteDidScroll()
+        } else {
+            handleDidScroll()
         }
     }
 }
@@ -289,6 +279,75 @@ extension SMPager {
         _lastFrameIndex = frame
     }
     
+    fileprivate func viewsForInfinitePager() -> [UIView] {
+        guard let numberOfViews = pagerDataSource?.numberOfViews(), let viewForIndex = pagerDataSource?.viewForIndex, numberOfViews > 0 else {
+            return []
+        }
+        
+        var viewsToBeRendered = [UIView]()
+        
+        if numberOfViews > 1 {
+            let leftIndex = _currentIndex == 0 ? numberOfViews-1 : _currentIndex-1
+            let rightIndex = _currentIndex == numberOfViews-1 ? 0 : _currentIndex+1
+            
+            viewsToBeRendered = [
+                viewForIndex(leftIndex, nil),
+                viewForIndex(_currentIndex, nil),
+                viewForIndex(rightIndex, nil)
+            ]
+            
+            contentSize = CGSize(width: bounds.width * 3, height: bounds.height)
+            moveToFrame(1)
+        } else {
+            viewsToBeRendered = [
+                viewForIndex(_currentIndex, nil),
+            ]
+            contentOffset.x = 0
+            contentSize = CGSize(width: bounds.width, height: bounds.height)
+        }
+        
+        return viewsToBeRendered
+    }
+    
+    fileprivate func viewsForPager() -> [UIView] {
+        guard let numberOfViews = pagerDataSource?.numberOfViews(), let viewForIndex = pagerDataSource?.viewForIndex, numberOfViews > 0 else {
+            return []
+        }
+        
+        var viewsToBeRendered = [UIView]()
+        
+        if numberOfViews > 1 {
+            var indexSet = IndexSet()
+            var frameIndex: Int
+            if _currentIndex == 0 {
+                (0..._maxFrameNumber).forEach({ indexSet.insert($0) })
+                frameIndex = 0
+            }
+            else if _currentIndex == numberOfViews-1 {
+                (_currentIndex-_maxFrameNumber..._currentIndex).forEach({ indexSet.insert($0) })
+                frameIndex = _maxFrameNumber
+            }
+            else {
+                (_currentIndex-1..._currentIndex+1).forEach({ indexSet.insert($0) })
+                frameIndex = 1
+            }
+            
+            viewsToBeRendered = indexSet.map { viewForIndex($0, nil) }
+            
+            contentSize = CGSize(width: bounds.width * CGFloat(_maxFrameNumber+1), height: bounds.height)
+                        
+            moveToFrame(frameIndex)
+        } else {
+            viewsToBeRendered = [
+                viewForIndex(_currentIndex, nil),
+            ]
+            contentOffset.x = 0
+            contentSize = CGSize(width: bounds.width, height: bounds.height)
+        }
+        
+        return viewsToBeRendered
+    }
+    
     fileprivate func updateScrollDirection() {
         if _lastXOffset < contentOffset.x {
             _scrollDirection = .right
@@ -301,14 +360,14 @@ extension SMPager {
         _lastXOffset = contentOffset.x
     }
     
-    fileprivate func handleDidScroll() {
-        guard let viewForIndex = pagerDataSource?.viewForIndex, let numberOfViews = pagerDataSource?.numberOfViews()  else {
+    fileprivate func handleInfiniteDidScroll() {
+        guard let viewForIndex = pagerDataSource?.viewForIndex else {
             return
         }
         
         if _isPageChanged && _scrollDirection != .none && _lastFrameIndex != _frameIndex {
             _currentIndex = _nextCalculatedPageIndex
-                                    
+            
             if _frameIndex == 2 {
                 let viewToBeReused = _frameViews[0]
                 moveFrame(fromPosition: 1, toPosition: 0)
@@ -329,34 +388,61 @@ extension SMPager {
         }
     }
     
-    fileprivate func handleTwoPageDidScroll() {
-        guard let viewForIndex = pagerDataSource?.viewForIndex else {
+    fileprivate func handleDidScroll() {
+        guard _initialized, let viewForIndex = pagerDataSource?.viewForIndex, let numberOfViews = pagerDataSource?.numberOfViews() else {
             return
-        }
-        
-        if _scrollDirection == .right && _frameViews[2] == nil && _lastXOffset >= bounds.width {
-            moveFrame(fromPosition: 0, toPosition: 2)
-        }
-        else if _scrollDirection == .left && _frameViews[0] == nil && _lastXOffset <= bounds.width {
-            moveFrame(fromPosition: 2, toPosition: 0)
         }
         
         if _isPageChanged && _scrollDirection != .none && _lastFrameIndex != _frameIndex {
             _currentIndex = _nextCalculatedPageIndex
             
-            if _scrollDirection == .right {
-                moveFrame(fromPosition: 2, toPosition: 1)
-                setView(viewForIndex(_currentIndex, nil), toFrameAtIndex: 2)
+            guard numberOfViews > 2 else {
+                _lastFrameIndex = _frameIndex
+                pagerDelegate?.pageChanged(page: _frameIndex)
+                bounces = true
+                return
             }
-            else if _scrollDirection == .left {
-                moveFrame(fromPosition: 0, toPosition: 1)
-                setView(viewForIndex(_currentIndex, nil), toFrameAtIndex: 0)
+            
+            if _frameIndex == _maxFrameNumber {
+                if _currentIndex <= 2 {
+                    _currentIndex = 2
+                }
+                
+                bounces = _currentIndex == numberOfViews-1
+                
+                if _currentIndex < numberOfViews-1 {
+                    let viewToBeReused = _frameViews[0]
+                    moveFrame(fromPosition: 1, toPosition: 0)
+                    moveFrame(fromPosition: 2, toPosition: 1)
+                    setView(viewForIndex(_nextCalculatedPageIndex, viewToBeReused), toFrameAtIndex: 2)
+                    moveToFrame(1)
+                }
+            }
+            else if _frameIndex == 0 {
+                if _currentIndex > 0 {
+                    if _currentIndex >= numberOfViews-3 {
+                        _currentIndex = numberOfViews-3
+                    }
+                    
+                    let viewToBeReused = _frameViews[2]
+                    moveFrame(fromPosition: 1, toPosition: 2)
+                    moveFrame(fromPosition: 0, toPosition: 1)
+                    setView(viewForIndex(_nextCalculatedPageIndex, viewToBeReused), toFrameAtIndex: 0)
+                    moveToFrame(1)
+                }
+                
+                bounces = _currentIndex == 0
             }
             
             _lastFrameIndex = _frameIndex
-            moveToFrame(1)
-            
             pagerDelegate?.pageChanged(page: _currentIndex)
+        }
+        
+        if !_isPageChanged && _frameIndex > 0 && _frameIndex < 2 && numberOfViews > 2 {
+            bounces = false
+        }
+        else if _isPageChanged && (_frameIndex == 0 || _frameIndex == _maxFrameNumber) {
+            bounces = true
         }
     }
 }

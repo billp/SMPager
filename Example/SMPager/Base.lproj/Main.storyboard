@@ -32,16 +32,35 @@
                                 <color key="barTintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <items>
                                     <navigationItem title="SMPager" id="L3T-je-v1l">
-                                        <barButtonItem key="leftBarButtonItem" title="Previous" id="Y05-of-M4w">
-                                            <connections>
-                                                <action selector="previousAction:" destination="vXZ-lx-hvc" id="46q-U4-e2r"/>
-                                            </connections>
-                                        </barButtonItem>
-                                        <barButtonItem key="rightBarButtonItem" title="Next" id="4d5-pr-7RA">
-                                            <connections>
-                                                <action selector="nextAction:" destination="vXZ-lx-hvc" id="vCK-HI-1bI"/>
-                                            </connections>
-                                        </barButtonItem>
+                                        <leftBarButtonItems>
+                                            <barButtonItem title="Previous" id="Y05-of-M4w">
+                                                <connections>
+                                                    <action selector="previousAction:" destination="vXZ-lx-hvc" id="46q-U4-e2r"/>
+                                                </connections>
+                                            </barButtonItem>
+                                            <barButtonItem title="Next" id="4d5-pr-7RA">
+                                                <connections>
+                                                    <action selector="nextAction:" destination="vXZ-lx-hvc" id="vCK-HI-1bI"/>
+                                                </connections>
+                                            </barButtonItem>
+                                        </leftBarButtonItems>
+                                        <rightBarButtonItems>
+                                            <barButtonItem style="plain" id="QeW-58-N1T">
+                                                <switch key="customView" opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" id="qtJ-Ob-SP1">
+                                                    <rect key="frame" x="343" y="6.5" width="51" height="31"/>
+                                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                                    <connections>
+                                                        <action selector="infiniteSwitchValueChanged:" destination="vXZ-lx-hvc" eventType="valueChanged" id="O3m-fV-dUV"/>
+                                                    </connections>
+                                                </switch>
+                                                <connections>
+                                                    <action selector="infiniteSwitchValueChanged:" destination="vXZ-lx-hvc" id="Jq9-jh-Vg0"/>
+                                                </connections>
+                                            </barButtonItem>
+                                            <barButtonItem title="Infinite" id="FnJ-Kt-Aka">
+                                                <color key="tintColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                            </barButtonItem>
+                                        </rightBarButtonItems>
                                     </navigationItem>
                                 </items>
                             </navigationBar>
@@ -56,6 +75,7 @@
                         </constraints>
                     </view>
                     <connections>
+                        <outlet property="infiniteBarButtonItem" destination="FnJ-Kt-Aka" id="fvi-Cb-zKk"/>
                         <outlet property="navBar" destination="gyg-3F-lqa" id="e7P-HU-B0y"/>
                         <outlet property="pageControl" destination="smZ-7M-3cy" id="dBS-Ih-glH"/>
                     </connections>
