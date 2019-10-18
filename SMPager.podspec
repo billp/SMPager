@@ -9,8 +9,8 @@
 Pod::Spec.new do |s|
   s.name             = 'SMPager'
   s.version          = '0.1.0'
-  s.summary          = 'A short description of SMPager.'
-
+  s.summary          = 'A lightweight, memory-efficient implementation of UIScrollView written in Swift.'
+  s.swift_versions   = ["5.0"]
 # This description is used to generate tags and improve search results.
 #   * Think: What does it do? Why did you write it? What is the focus?
 #   * Try to keep it short, snappy and to the point.
@@ -18,17 +18,15 @@ Pod::Spec.new do |s|
 #   * Finally, don't worry about the indent, CocoaPods strips it!
 
   s.description      = <<-DESC
-TODO: Add long description of the pod here.
+SMPager or SimplePager is a lightweight, memory-efficient implementation of UIScrollView written in Swift. It works with reusable views the same way as UIKit's UITableView does.
                        DESC
 
-  s.homepage         = 'https://github.com/Vasilis Panagiotopoulos/SMPager'
-  # s.screenshots     = 'www.example.com/screenshots_1', 'www.example.com/screenshots_2'
+  s.homepage         = 'https://github.com/billp/SMPager'
   s.license          = { :type => 'MIT', :file => 'LICENSE' }
-  s.author           = { 'Vasilis Panagiotopoulos' => 'v.panagiotopoulos@afse.eu' }
-  s.source           = { :git => 'https://github.com/Vasilis Panagiotopoulos/SMPager.git', :tag => s.version.to_s }
-  # s.social_media_url = 'https://twitter.com/<TWITTER_USERNAME>'
+  s.author           = { 'Bill Panagiotopoulos' => 'billp.dev@gmail.com' }
+  s.source           = { :git => 'https://github.com/billp/SMPager.git', :tag => s.version.to_s }
 
-  s.ios.deployment_target = '8.0'
+  s.ios.deployment_target = '10.0'
 
   s.source_files = 'SMPager/Classes/**/*'
   
