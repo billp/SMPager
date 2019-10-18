@@ -1,5 +1,8 @@
 
+
 # SMPager
+[![Badge w/ Version](https://cocoapod-badges.herokuapp.com/v/SMPager/badge.png)](https://cocoadocs.org/docsets/SMPager) [![Badge w/ Platform](https://cocoapod-badges.herokuapp.com/p/SMPager/badge.svg)](https://cocoadocs.org/docsets/SMPager)
+
 **SMPager** or SimplePager is a lightweight, memory-efficient implementation of UIScrollView written in Swift. It works with reusable views the same way as UIKit's  UITableView does.
 
 ---
@@ -17,7 +20,7 @@
 
 
  ```ruby
- pod 'SMPager'
+ pod 'SMPager', '~> 0.1'
  ```
 
 ## Example
@@ -77,9 +80,9 @@ extension ViewController: SMPagerDataSource {
         return imageURLs.count
     }
     
-    func viewForIndex(_ index: Int, reuseView: UIView?) -> UIView {
+    func viewForIndex(_ index: Int, reusedView: UIView?) -> UIView {
         let imageView: UIImageView
-        if let reuseView = reuseView as? UIImageView {
+        if let reuseView = reusedView as? UIImageView {
             imageView = reuseView
         } else {
             imageView = UIImageView()
