@@ -133,7 +133,7 @@ func viewForIndex(_ index: Int, reusedView: UIView?) -> UIView
 ```
 
 ## Author
-Vasilis Panagiotopoulos, billp.dev@gmail.com
+Bill Panagiotopoulos, billp.dev@gmail.com
 
 ## License
 SMPager is available under the MIT license. See the LICENSE file for more info.
