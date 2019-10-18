@@ -1,6 +1,6 @@
 
 # SMPager
-**SMPager** or SimplePager is a lightweight, memory-efficient implementation of UIScrollView written in Swift, that works with reusable views the same way as UIKit's  UITableView does.
+**SMPager** or SimplePager is a lightweight, memory-efficient implementation of UIScrollView written in Swift. It works with reusable views the same way as UIKit's  UITableView does.
 
 ---
 ![enter image description here](https://media.giphy.com/media/H7xeUycyRfgphI7sjZ/giphy.gif)
