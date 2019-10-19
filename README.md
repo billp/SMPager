@@ -106,6 +106,8 @@ var infiniteScrollingEnabled: Bool
 var pagerDelegate: SMPagerDelegate?
 // Set the SMPagerDataSource. (see bellow)
 var pagerDataSource: SMPagerDataSource?
+// Get the visible page index (readonly)
+var currentIndex
 ```
 ### Methods
 ```swift
