@@ -107,7 +107,7 @@ var pagerDelegate: SMPagerDelegate?
 // Set the SMPagerDataSource. (see bellow)
 var pagerDataSource: SMPagerDataSource?
 // Get the visible page index (readonly)
-var currentIndex
+var currentIndex: Int
 ```
 ### Methods
 ```swift
