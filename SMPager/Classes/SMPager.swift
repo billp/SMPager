@@ -53,6 +53,9 @@ open class SMPager: UIScrollView {
     // MARK: Public Properties
     weak public var pagerDelegate: SMPagerDelegate?
     weak public var pagerDataSource: SMPagerDataSource?
+
+    fileprivate(set) public var currentIndex: Int = 0
+
     public var infiniteScrollingEnabled: Bool = false {
         didSet {
             reloadData()
@@ -65,7 +68,6 @@ open class SMPager: UIScrollView {
     fileprivate var _lastXOffsetBeforePageChange: CGFloat = 0
     fileprivate var _orientationChanged: Bool = false
     fileprivate var _lastComponentSize: CGSize = .zero
-    fileprivate var _currentIndex: Int = 0
     fileprivate var _lastXOffset: CGFloat = 0
     fileprivate var _scrollDirection: InfiniteScrollViewDirection = .none
     fileprivate var _lastFrameIndex = 0
@@ -105,7 +107,7 @@ open class SMPager: UIScrollView {
             fatalError("numberOfViews() delegate method not implemented.")
         }
 
-        var newPageIndex = _currentIndex
+        var newPageIndex = currentIndex
         
         if _isPageChanged && _scrollDirection != .none {
             newPageIndex += _pageChangeOffsets[_scrollDirection]!
@@ -196,7 +198,7 @@ extension SMPager {
     /// - parameters:
     ///   - page: The page to move to (starting from zero)
     public func moveTo(page: Int) {
-        _currentIndex = page
+        currentIndex = page
         reloadData()
     }
     
@@ -287,12 +289,12 @@ extension SMPager {
         var viewsToBeRendered = [UIView]()
         
         if numberOfViews > 1 {
-            let leftIndex = _currentIndex == 0 ? numberOfViews-1 : _currentIndex-1
-            let rightIndex = _currentIndex == numberOfViews-1 ? 0 : _currentIndex+1
+            let leftIndex = currentIndex == 0 ? numberOfViews-1 : currentIndex-1
+            let rightIndex = currentIndex == numberOfViews-1 ? 0 : currentIndex+1
             
             viewsToBeRendered = [
                 viewForIndex(leftIndex, nil),
-                viewForIndex(_currentIndex, nil),
+                viewForIndex(currentIndex, nil),
                 viewForIndex(rightIndex, nil)
             ]
             
@@ -300,7 +302,7 @@ extension SMPager {
             moveToFrame(1)
         } else {
             viewsToBeRendered = [
-                viewForIndex(_currentIndex, nil),
+                viewForIndex(currentIndex, nil),
             ]
             contentOffset.x = 0
             contentSize = CGSize(width: bounds.width, height: bounds.height)
@@ -319,16 +321,16 @@ extension SMPager {
         if numberOfViews > 1 {
             var indexSet = IndexSet()
             var frameIndex: Int
-            if _currentIndex == 0 {
+            if currentIndex == 0 {
                 (0..._maxFrameNumber).forEach({ indexSet.insert($0) })
                 frameIndex = 0
             }
-            else if _currentIndex == numberOfViews-1 {
-                (_currentIndex-_maxFrameNumber..._currentIndex).forEach({ indexSet.insert($0) })
+            else if currentIndex == numberOfViews-1 {
+                (currentIndex-_maxFrameNumber...currentIndex).forEach({ indexSet.insert($0) })
                 frameIndex = _maxFrameNumber
             }
             else {
-                (_currentIndex-1..._currentIndex+1).forEach({ indexSet.insert($0) })
+                (currentIndex-1...currentIndex+1).forEach({ indexSet.insert($0) })
                 frameIndex = 1
             }
             
@@ -339,7 +341,7 @@ extension SMPager {
             moveToFrame(frameIndex)
         } else {
             viewsToBeRendered = [
-                viewForIndex(_currentIndex, nil),
+                viewForIndex(currentIndex, nil),
             ]
             contentOffset.x = 0
             contentSize = CGSize(width: bounds.width, height: bounds.height)
@@ -366,7 +368,7 @@ extension SMPager {
         }
         
         if _isPageChanged && _scrollDirection != .none && _lastFrameIndex != _frameIndex {
-            _currentIndex = _nextCalculatedPageIndex
+            currentIndex = _nextCalculatedPageIndex
             
             if _frameIndex == 2 {
                 let viewToBeReused = _frameViews[0]
@@ -384,7 +386,7 @@ extension SMPager {
             _lastFrameIndex = _frameIndex
             moveToFrame(1)
             
-            pagerDelegate?.pageChanged(page: _currentIndex)
+            pagerDelegate?.pageChanged(page: currentIndex)
         }
     }
     
@@ -394,9 +396,10 @@ extension SMPager {
         }
         
         if _isPageChanged && _scrollDirection != .none && _lastFrameIndex != _frameIndex {
-            _currentIndex = _nextCalculatedPageIndex
+            currentIndex = _nextCalculatedPageIndex
             
             guard numberOfViews > 2 else {
+                // Handle special case when number of views are less than 3
                 _lastFrameIndex = _frameIndex
                 pagerDelegate?.pageChanged(page: _frameIndex)
                 bounces = true
@@ -404,13 +407,16 @@ extension SMPager {
             }
             
             if _frameIndex == _maxFrameNumber {
-                if _currentIndex <= 2 {
-                    _currentIndex = 2
+                // Force set the correct current index when the scrolling position is in the first 3 frames
+                if currentIndex <= 2 {
+                    currentIndex = 2
                 }
                 
-                bounces = _currentIndex == numberOfViews-1
+                // Enable bouncing when scrolling position is in the last 3 frames
+                bounces = currentIndex == numberOfViews-1
                 
-                if _currentIndex < numberOfViews-1 {
+                // Rearrange views if needed
+                if currentIndex < numberOfViews-1 {
                     let viewToBeReused = _frameViews[0]
                     moveFrame(fromPosition: 1, toPosition: 0)
                     moveFrame(fromPosition: 2, toPosition: 1)
@@ -419,11 +425,13 @@ extension SMPager {
                 }
             }
             else if _frameIndex == 0 {
-                if _currentIndex > 0 {
-                    if _currentIndex >= numberOfViews-3 {
-                        _currentIndex = numberOfViews-3
+                if currentIndex > 0 {
+                    // Force set the correct current index when the scrolling position is in the last 3 frames
+                    if currentIndex >= numberOfViews-3 {
+                        currentIndex = numberOfViews-3
                     }
                     
+                    // Rearrange views
                     let viewToBeReused = _frameViews[2]
                     moveFrame(fromPosition: 1, toPosition: 2)
                     moveFrame(fromPosition: 0, toPosition: 1)
@@ -431,16 +439,19 @@ extension SMPager {
                     moveToFrame(1)
                 }
                 
-                bounces = _currentIndex == 0
+                // Enable bouncing when scrolling position when page is 0
+                bounces = currentIndex == 0
             }
             
             _lastFrameIndex = _frameIndex
-            pagerDelegate?.pageChanged(page: _currentIndex)
+            pagerDelegate?.pageChanged(page: currentIndex)
         }
         
+        // Disable bouncing between page scrolling
         if !_isPageChanged && _frameIndex > 0 && _frameIndex < 2 && numberOfViews > 2 {
             bounces = false
         }
+        // Enable bouncing for the first/last pages
         else if _isPageChanged && (_frameIndex == 0 || _frameIndex == _maxFrameNumber) {
             bounces = true
         }
