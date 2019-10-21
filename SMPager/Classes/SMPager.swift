@@ -86,7 +86,14 @@ open class SMPager: UIScrollView {
     // Returns a boolean that indicates if the page is changed, meaning that the scrolling offset
     // is exactly divided with the pager width.
     fileprivate var _isPageChanged: Bool {
-        return contentOffset.x.truncatingRemainder(dividingBy: bounds.width) == 0.0
+       // debugPrint("\" \(contentOffset.x.truncatingRemainder(dividingBy: bounds.width))")
+        if _frameIndex > _lastFrameIndex && contentOffset.x.truncatingRemainder(dividingBy: bounds.width) >= 0.0 {
+            return true
+        }
+        else if _frameIndex < _lastFrameIndex && _scrollDirection == .left && contentOffset.x.truncatingRemainder(dividingBy: bounds.width) <= 20.0 {
+            return true
+        }
+        return false
     }
     
     // Returns the current position of the frames (it can be 0, 1 or 2)
