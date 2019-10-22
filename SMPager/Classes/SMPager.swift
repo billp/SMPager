@@ -66,9 +66,9 @@ open class SMPager: UIScrollView {
     fileprivate var _initialized = false
     fileprivate var _pageChangeAnimationFinished = true
     fileprivate var _lastXOffsetBeforePageChange: CGFloat = 0
-    fileprivate var _orientationChanged: Bool = false
     fileprivate var _lastComponentSize: CGSize = .zero
     fileprivate var _lastXOffset: CGFloat = 0
+    fileprivate var _lastXOffsetDiff: CGFloat = 0.0
     fileprivate var _scrollDirection: InfiniteScrollViewDirection = .none
     fileprivate var _lastFrameIndex = 0
     fileprivate let _animationDuration = 0.3
@@ -86,7 +86,20 @@ open class SMPager: UIScrollView {
     // Returns a boolean that indicates if the page is changed, meaning that the scrolling offset
     // is exactly divided with the pager width.
     fileprivate var _isPageChanged: Bool {
-        return contentOffset.x.truncatingRemainder(dividingBy: bounds.width) == 0.0
+        // Calculate page changed for infinite scrolling
+        if infiniteScrollingEnabled {
+            return contentOffset.x.truncatingRemainder(dividingBy: bounds.width) == 0.0
+        }
+        
+        // Check for page change from left to right
+        if _frameIndex > _lastFrameIndex && contentOffset.x.truncatingRemainder(dividingBy: bounds.width) >= 0.0 {
+            return true
+        }
+        // Check for page change from right to left
+        else if _scrollDirection == .left && contentOffset.x.truncatingRemainder(dividingBy: bounds.width)-abs(self._lastXOffsetDiff) <= 0.0 {
+            return true
+        }
+        return false
     }
     
     // Returns the current position of the frames (it can be 0, 1 or 2)
@@ -359,6 +372,7 @@ extension SMPager {
             _scrollDirection = .none
         }
 
+        _lastXOffsetDiff = _lastXOffset - contentOffset.x
         _lastXOffset = contentOffset.x
     }
     
@@ -398,6 +412,7 @@ extension SMPager {
         if _isPageChanged && _scrollDirection != .none && _lastFrameIndex != _frameIndex {
             currentIndex = _nextCalculatedPageIndex
             
+             // Special case when numberOfViews <= 2
             guard numberOfViews > 2 else {
                 // Handle special case when number of views are less than 3
                 _lastFrameIndex = _frameIndex
@@ -406,6 +421,7 @@ extension SMPager {
                 return
             }
             
+            // Scrolling from left to right
             if _frameIndex == _maxFrameNumber {
                 // Force set the correct current index when the scrolling position is in the first 3 frames
                 if currentIndex <= 2 {
@@ -424,10 +440,12 @@ extension SMPager {
                     moveToFrame(1)
                 }
             }
+            // Scrolling from right to left
             else if _frameIndex == 0 {
                 if currentIndex > 0 {
-                    // Force set the correct current index when the scrolling position is in the last 3 frames
-                    if currentIndex >= numberOfViews-3 {
+                    // Force set the correct current index when scrolling too fast from right to left
+                    if currentIndex > numberOfViews-3 {
+                        pagerDelegate?.pageChanged(page: currentIndex)
                         currentIndex = numberOfViews-3
                     }
                     
