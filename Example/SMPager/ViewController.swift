@@ -78,7 +78,6 @@ extension ViewController {
 // MARK: SMPagerDelegate
 extension ViewController: SMPagerDelegate {
     func pageChanged(page: Int) {
-        debugPrint("page changed: \(page)")
         pageControl.currentPage = page
     }
 }
