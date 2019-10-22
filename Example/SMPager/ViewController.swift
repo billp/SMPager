@@ -20,6 +20,9 @@ class ViewController: UIViewController {
       "https://picsum.photos/id/886/500/900",
       "https://picsum.photos/id/362/500/900",
       "https://picsum.photos/id/569/500/900",
+      "https://picsum.photos/id/432/500/900",
+      "https://picsum.photos/id/289/500/900",
+      "https://picsum.photos/id/834/500/900",
     ]
     
     lazy var pager: SMPager = {
@@ -75,6 +78,7 @@ extension ViewController {
 // MARK: SMPagerDelegate
 extension ViewController: SMPagerDelegate {
     func pageChanged(page: Int) {
+        debugPrint("page changed: \(page)")
         pageControl.currentPage = page
     }
 }
