@@ -66,7 +66,6 @@ open class SMPager: UIScrollView {
     fileprivate var _initialized = false
     fileprivate var _pageChangeAnimationFinished = true
     fileprivate var _lastXOffsetBeforePageChange: CGFloat = 0
-    fileprivate var _orientationChanged: Bool = false
     fileprivate var _lastComponentSize: CGSize = .zero
     fileprivate var _lastXOffset: CGFloat = 0
     fileprivate var _lastXOffsetDiff: CGFloat = 0.0
