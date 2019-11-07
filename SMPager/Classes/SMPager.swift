@@ -72,7 +72,9 @@ open class SMPager: UIScrollView {
     fileprivate var _scrollDirection: InfiniteScrollViewDirection = .none
     fileprivate var _lastFrameIndex = 0
     fileprivate let _animationDuration = 0.3
-
+    fileprivate var _frameHeightConstraint: NSLayoutConstraint!
+    fileprivate var _frameWidthConstraint: NSLayoutConstraint!
+    
     // Convenient variable for knowing the Integer representation of the next or previous page, used for calculations.
     fileprivate var _pageChangeOffsets: [InfiniteScrollViewDirection: Int] = [
         .left: -1,
@@ -149,7 +151,6 @@ open class SMPager: UIScrollView {
         if #available(iOS 11.0, *) {
             contentInsetAdjustmentBehavior = .never
         }
-        NotificationCenter.default.addObserver(self, selector: #selector(orientationChanged(_:)), name: UIDevice.orientationDidChangeNotification, object: nil)
         
         reloadData()
     }
@@ -166,12 +167,18 @@ open class SMPager: UIScrollView {
         }
         updateScrollDirection()
         
+        // Detect orientation change
+        if _lastComponentSize != frame.size {
+           self.componentSizeChanged(withSize: self.frame.size)
+        }
+        
         // Ιf the number of views are 2 then handle them differently
         if infiniteScrollingEnabled {
             handleInfiniteDidScroll()
         } else {
             handleDidScroll()
         }
+        _lastComponentSize = frame.size
     }
 }
 
@@ -179,7 +186,7 @@ open class SMPager: UIScrollView {
 extension SMPager {
      /// Moves to previous page
      /// - Parameters:
-     ///     - animated: animate when previous to next page.
+     ///     - animated: animate when moving to previous page.
     public func moveToPreviousPage(animated: Bool = true) {
         guard _pageChangeAnimationFinished else {
             return
@@ -240,6 +247,8 @@ extension SMPager {
         } else {
             handleDidScroll()
         }
+        
+        updateConstraints()
     }
 }
 
@@ -255,13 +264,15 @@ extension SMPager {
             view.removeFromSuperview()
         }
         
-        view.frame = CGRect(x: CGFloat(index) * bounds.width, y: 0, width: bounds.width, height: bounds.height)
         view.clipsToBounds = true
         
         // Add only if not in view hierarchy
         if _frameViews[index] == nil {
             addSubview(view)
         }
+        
+        view.translatesAutoresizingMaskIntoConstraints = false
+        updateConstraints()
         
         _frameViews[index] = view
     }
@@ -284,7 +295,7 @@ extension SMPager {
         }
     }
     
-    fileprivate func moveToFrame(_ frame: Int) {
+    fileprivate func scrollToFrame(_ frame: Int) {
         guard let numberOfViews = pagerDataSource?.numberOfViews(), numberOfViews > 1 else {
             return
         }
@@ -312,7 +323,7 @@ extension SMPager {
             ]
             
             contentSize = CGSize(width: bounds.width * 3, height: bounds.height)
-            moveToFrame(1)
+            scrollToFrame(1)
         } else {
             viewsToBeRendered = [
                 viewForIndex(currentIndex, nil),
@@ -351,7 +362,7 @@ extension SMPager {
             
             contentSize = CGSize(width: bounds.width * CGFloat(_maxFrameNumber+1), height: bounds.height)
                         
-            moveToFrame(frameIndex)
+            scrollToFrame(frameIndex)
         } else {
             viewsToBeRendered = [
                 viewForIndex(currentIndex, nil),
@@ -363,6 +374,36 @@ extension SMPager {
         return viewsToBeRendered
     }
     
+    open override func updateConstraints() {
+        super.updateConstraints()
+        
+        guard let frame1 = _frameViews[0], let frame2 = _frameViews[1], let frame3 = _frameViews[2] else {
+          return
+        }
+      
+        [frame1, frame2, frame3].forEach { $0.removeConstraints($0.constraints) }
+      
+        _frameWidthConstraint = frame1.widthAnchor.constraint(equalToConstant: frame.size.width)
+        _frameHeightConstraint = frame1.heightAnchor.constraint(equalToConstant: frame.size.height)
+        
+        NSLayoutConstraint.activate([
+            frame1.leftAnchor.constraint(equalTo: leftAnchor),
+            frame1.topAnchor.constraint(equalTo: topAnchor),
+            frame1.bottomAnchor.constraint(equalTo: bottomAnchor),
+            frame2.leftAnchor.constraint(equalTo: frame1.rightAnchor),
+            frame2.topAnchor.constraint(equalTo: frame1.topAnchor),
+            frame2.bottomAnchor.constraint(equalTo: frame1.bottomAnchor),
+            frame3.leftAnchor.constraint(equalTo: frame2.rightAnchor),
+            frame3.topAnchor.constraint(equalTo: frame1.topAnchor),
+            frame3.bottomAnchor.constraint(equalTo: frame2.bottomAnchor),
+            frame3.rightAnchor.constraint(equalTo: rightAnchor),
+            _frameWidthConstraint,
+            frame2.widthAnchor.constraint(equalTo: frame1.widthAnchor),
+            frame3.widthAnchor.constraint(equalTo: frame2.widthAnchor),
+            _frameHeightConstraint
+        ])
+    }
+        
     fileprivate func updateScrollDirection() {
         if _lastXOffset < contentOffset.x {
             _scrollDirection = .right
@@ -389,16 +430,18 @@ extension SMPager {
                 moveFrame(fromPosition: 1, toPosition: 0)
                 moveFrame(fromPosition: 2, toPosition: 1)
                 setView(viewForIndex(_nextCalculatedPageIndex, viewToBeReused), toFrameAtIndex: 2)
+                updateConstraints()
             }
             else if _frameIndex == 0 {
                 let viewToBeReused = _frameViews[2]
                 moveFrame(fromPosition: 1, toPosition: 2)
                 moveFrame(fromPosition: 0, toPosition: 1)
                 setView(viewForIndex(_nextCalculatedPageIndex, viewToBeReused), toFrameAtIndex: 0)
+                updateConstraints()
             }
             
             _lastFrameIndex = _frameIndex
-            moveToFrame(1)
+            scrollToFrame(1)
             
             pagerDelegate?.pageChanged(page: currentIndex)
         }
@@ -437,7 +480,8 @@ extension SMPager {
                     moveFrame(fromPosition: 1, toPosition: 0)
                     moveFrame(fromPosition: 2, toPosition: 1)
                     setView(viewForIndex(_nextCalculatedPageIndex, viewToBeReused), toFrameAtIndex: 2)
-                    moveToFrame(1)
+                    scrollToFrame(1)
+                    updateConstraints()
                 }
             }
             // Scrolling from right to left
@@ -454,7 +498,8 @@ extension SMPager {
                     moveFrame(fromPosition: 1, toPosition: 2)
                     moveFrame(fromPosition: 0, toPosition: 1)
                     setView(viewForIndex(_nextCalculatedPageIndex, viewToBeReused), toFrameAtIndex: 0)
-                    moveToFrame(1)
+                    scrollToFrame(1)
+                    updateConstraints()
                 }
                 
                 // Enable bouncing when scrolling position when page is 0
@@ -474,14 +519,12 @@ extension SMPager {
             bounces = true
         }
     }
-}
-
-// MARK: Observers
-extension SMPager {
-    @objc fileprivate func orientationChanged(_ notification: Notification) {
-        if (_lastComponentSize != bounds.size) {
-            reloadData()
-        }
-        _lastComponentSize = bounds.size
+    
+    fileprivate func componentSizeChanged(withSize newSize: CGSize) {
+        _frameHeightConstraint.constant = newSize.height
+        _frameWidthConstraint.constant = newSize.width
+        
+        contentSize.width = newSize.width * 3
+        scrollToFrame(_lastFrameIndex)
     }
 }
