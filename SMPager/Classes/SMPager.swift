@@ -83,7 +83,7 @@ open class SMPager: UIScrollView {
     ]
     // This array is used as a "Window" which holds only the visible views.
     // Imagine you have 5 views: [view1] ([view2] [view3] [view4]) [view5] -> only the views in parentheses are rendered.
-    fileprivate var _frameViews: [Int: UIView] = [:]
+    fileprivate var frameViews: [Int: UIView] = [:]
     
     // Returns a boolean that indicates if the page is changed, meaning that the scrolling offset
     // is exactly divided with the pager width.
@@ -107,6 +107,17 @@ open class SMPager: UIScrollView {
     // Returns the current position of the frames (it can be 0, 1 or 2)
     fileprivate var frameIndex: Int {
         return Int(contentOffset.x / bounds.width)
+    }
+    
+    fileprivate var scrolledToFirstPage: Bool {
+        return currentIndex == 0 && scrollDirection == .left
+    }
+    
+    fileprivate var scrolledToLastPage: Bool {
+        guard let numberOfViews = pagerDataSource?.numberOfViews() else {
+            return false
+        }
+        return currentIndex == numberOfViews-1 && scrollDirection == .right
     }
     
     fileprivate var maxFrameNumber: Int {
@@ -267,14 +278,13 @@ extension SMPager {
         view.clipsToBounds = true
         
         // Add only if not in view hierarchy
-        if _frameViews[index] == nil {
+        if frameViews[index] == nil {
             addSubview(view)
         }
         
         view.translatesAutoresizingMaskIntoConstraints = false
-        updateConstraints()
         
-        _frameViews[index] = view
+        frameViews[index] = view
     }
     
     fileprivate func removeView(fromFrameAtIndex index: Int) {
@@ -282,16 +292,16 @@ extension SMPager {
             return
         }
         
-        if let existingView = _frameViews[index] {
+        if let existingView = frameViews[index] {
             existingView.removeFromSuperview()
-            _frameViews[index] = nil
+            frameViews[index] = nil
         }
     }
     
     fileprivate func moveFrame(fromPosition: Int, toPosition position: Int) {
-        if let view = _frameViews[fromPosition] {
+        if let view = frameViews[fromPosition] {
             setView(view, toFrameAtIndex: position)
-            _frameViews[fromPosition] = nil
+            frameViews[fromPosition] = nil
         }
     }
     
@@ -377,31 +387,41 @@ extension SMPager {
     open override func updateConstraints() {
         super.updateConstraints()
         
-        guard let frame1 = _frameViews[0], let frame2 = _frameViews[1], let frame3 = _frameViews[2] else {
-          return
-        }
-      
-        [frame1, frame2, frame3].forEach { $0.removeConstraints($0.constraints) }
-      
-        frameWidthConstraint = frame1.widthAnchor.constraint(equalToConstant: frame.size.width)
-        frameHeightConstraint = frame1.heightAnchor.constraint(equalToConstant: frame.size.height)
+        let sortedFrameViews = frameViews.keys.sorted().map { frameViews[$0]! }
         
-        NSLayoutConstraint.activate([
-            frame1.leftAnchor.constraint(equalTo: leftAnchor),
-            frame1.topAnchor.constraint(equalTo: topAnchor),
-            frame1.bottomAnchor.constraint(equalTo: bottomAnchor),
-            frame2.leftAnchor.constraint(equalTo: frame1.rightAnchor),
-            frame2.topAnchor.constraint(equalTo: frame1.topAnchor),
-            frame2.bottomAnchor.constraint(equalTo: frame1.bottomAnchor),
-            frame3.leftAnchor.constraint(equalTo: frame2.rightAnchor),
-            frame3.topAnchor.constraint(equalTo: frame1.topAnchor),
-            frame3.bottomAnchor.constraint(equalTo: frame2.bottomAnchor),
-            frame3.rightAnchor.constraint(equalTo: rightAnchor),
-            frameWidthConstraint,
-            frame2.widthAnchor.constraint(equalTo: frame1.widthAnchor),
-            frame3.widthAnchor.constraint(equalTo: frame2.widthAnchor),
-            frameHeightConstraint
-        ])
+        sortedFrameViews.forEach { $0.removeConstraints($0.constraints) }
+        
+        var previousFrameView: UIView?
+        sortedFrameViews.enumerated().forEach { (index, frame) in
+            guard frame.superview != nil else {
+                return
+            }
+            
+            if index == 0 {
+                frameWidthConstraint = frame.widthAnchor.constraint(equalToConstant: self.frame.size.width)
+                frameHeightConstraint = frame.heightAnchor.constraint(equalToConstant: self.frame.size.height)
+                
+                NSLayoutConstraint.activate([
+                    frame.leftAnchor.constraint(equalTo: self.leftAnchor),
+                    frameWidthConstraint,
+                    frameHeightConstraint
+                ])
+            }
+            if let previousFrameView = previousFrameView, previousFrameView != frame {
+                NSLayoutConstraint.activate([
+                    frame.leftAnchor.constraint(equalTo: previousFrameView.rightAnchor),
+                    frame.heightAnchor.constraint(equalTo: previousFrameView.heightAnchor),
+                    frame.widthAnchor.constraint(equalTo: previousFrameView.widthAnchor),
+                ])
+            }
+            
+            NSLayoutConstraint.activate([
+                frame.topAnchor.constraint(equalTo: topAnchor)
+            ])
+            
+            
+            previousFrameView = frame
+        }
     }
         
     fileprivate func updateScrollDirection() {
@@ -426,19 +446,19 @@ extension SMPager {
             currentIndex = nextCalculatedPageIndex
             
             if frameIndex == 2 {
-                let viewToBeReused = _frameViews[0]
+                let viewToBeReused = frameViews[0]
                 moveFrame(fromPosition: 1, toPosition: 0)
                 moveFrame(fromPosition: 2, toPosition: 1)
                 setView(viewForIndex(nextCalculatedPageIndex, viewToBeReused), toFrameAtIndex: 2)
-                updateConstraints()
             }
             else if frameIndex == 0 {
-                let viewToBeReused = _frameViews[2]
+                let viewToBeReused = frameViews[2]
                 moveFrame(fromPosition: 1, toPosition: 2)
                 moveFrame(fromPosition: 0, toPosition: 1)
                 setView(viewForIndex(nextCalculatedPageIndex, viewToBeReused), toFrameAtIndex: 0)
-                updateConstraints()
             }
+            
+            updateConstraints()
             
             lastFrameIndex = frameIndex
             scrollToFrame(1)
@@ -476,7 +496,7 @@ extension SMPager {
                 
                 // Rearrange views if needed
                 if currentIndex < numberOfViews-1 {
-                    let viewToBeReused = _frameViews[0]
+                    let viewToBeReused = frameViews[0]
                     moveFrame(fromPosition: 1, toPosition: 0)
                     moveFrame(fromPosition: 2, toPosition: 1)
                     setView(viewForIndex(nextCalculatedPageIndex, viewToBeReused), toFrameAtIndex: 2)
@@ -494,7 +514,7 @@ extension SMPager {
                     }
                     
                     // Rearrange views
-                    let viewToBeReused = _frameViews[2]
+                    let viewToBeReused = frameViews[2]
                     moveFrame(fromPosition: 1, toPosition: 2)
                     moveFrame(fromPosition: 0, toPosition: 1)
                     setView(viewForIndex(nextCalculatedPageIndex, viewToBeReused), toFrameAtIndex: 0)
@@ -509,22 +529,22 @@ extension SMPager {
             lastFrameIndex = frameIndex
             pagerDelegate?.pageChanged(page: currentIndex)
         }
-        
-        // Disable bouncing between page scrolling
-        if !isPageChanged && frameIndex > 0 && frameIndex < 2 && numberOfViews > 2 {
-            bounces = false
-        }
         // Enable bouncing for the first/last pages
-        else if isPageChanged && (frameIndex == 0 || frameIndex == maxFrameNumber) {
+        if scrolledToFirstPage || scrolledToLastPage {
             bounces = true
+        } else if !isPageChanged && frameIndex > 0 && frameIndex < 2 && numberOfViews > 2 {
+            // Disable bouncing between page scrolling
+            bounces = false
         }
     }
     
     fileprivate func componentSizeChanged(withSize newSize: CGSize) {
         frameHeightConstraint.constant = newSize.height
         frameWidthConstraint.constant = newSize.width
+       
+        contentSize.width = newSize.width * CGFloat(frameViews.count)
+        contentSize.height = newSize.height
         
-        contentSize.width = newSize.width * 3
         scrollToFrame(lastFrameIndex)
     }
 }
