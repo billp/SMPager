@@ -339,7 +339,11 @@ extension SMPager {
             return
         }
         
+        // Set the new offset
         contentOffset = CGPoint(x: bounds.width * CGFloat(frame), y: 0)
+        // Cancel deceleration
+        setContentOffset(contentOffset, animated: false)
+
         lastXOffset = bounds.width
         lastFrameIndex = frame
     }
