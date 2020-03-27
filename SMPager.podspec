@@ -8,7 +8,7 @@
 
 Pod::Spec.new do |s|
   s.name             = 'SMPager'
-  s.version          = '0.1.3'
+  s.version          = '0.1.4'
   s.summary          = 'A lightweight, memory-efficient implementation of UIScrollView written in Swift.'
   s.swift_versions   = ["5.0"]
 # This description is used to generate tags and improve search results.
