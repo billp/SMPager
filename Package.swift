@@ -3,6 +3,7 @@ import PackageDescription
 
 let package = Package(
     name: "SMPager",
+    platforms: .iOS(.v9),
     products: [
         .library(
             name: "SMPager",
